@@ -1,0 +1,112 @@
+/* General styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+header {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    padding: 20px;
+    text-align: center;
+}
+
+nav h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+button#theme-toggler {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    cursor: pointer;
+}
+
+button#refresh-status,
+button#fetch-api {
+    padding: 8px 16px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+section {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+}
+
+#server-info {
+    padding: 15px;
+    margin-top: 20px;
+    background-color: var(--endpoint-bg);
+    border-radius: 8px;
+}
+
+#api-demo,
+#code {
+    margin-top: 40px;
+}
+
+#api-response {
+    background-color: var(--endpoint-bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+pre {
+    background-color: var(--pre-bg);
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--header-bg);
+    color: var(--header-text);
+}
+
+:root {
+    --background: #ffffff;
+    --text: #000000;
+    --header-bg: #f8f9fa;
+    --header-text: #333;
+    --button-bg: #333;
+    --button-text: #ffffff;
+    --endpoint-bg: #f1f1f1;
+    --pre-bg: #eaeaea;
+}
+
+.dark-mode {
+    --background: #121212;
+    --text: #ffffff;
+    --header-bg: #1e1e1e;
+    --header-text: #f8f9fa;
+    --button-bg: #ffffff;
+    --button-text: #333;
+    --endpoint-bg: #333;
+    --pre-bg: #444;
+}
+
+.code-example {
+    margin-top: 20px;
+}
+
+code {
+    display: block;
+    white-space: pre-wrap;
+}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Minecraft Server Status API Docs with demo and code examples">
+    <title>Minecraft Server Status API Docs</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-mode">
+    <header>
+        <nav>
+            <h1>Minecraft Server Status API</h1>
+            <button id="theme-toggler">🌙 Dark Mode</button>
+        </nav>
+    </header>
+
+    <section id="intro">
+        <h2>API Overview</h2>
+        <p>Welcome to the Minecraft Server Status API documentation. This API allows you to get the online status of Java and Bedrock servers.</p>
+    </section>
+
+    <section id="server-status">
+        <h2>Live Server Status</h2>
+        <p>Get the current status of the Minecraft server:</p>
+        <div id="server-info">
+            <p><strong>Fetching server status...</strong></p>
+        </div>
+        <button id="refresh-status">Refresh Status</button>
+    </section>
+
+    <section id="api-demo">
+        <h2>API Demo</h2>
+        <p>Try fetching live Minecraft server status via the API by clicking the button below. This demo will make a real API call to fetch the status of the server <code>mc.hypixel.net</code>:</p>
+        <button id="fetch-api" onclick="fetchDemoAPI()">Fetch Server Status</button>
+        <div id="api-response">
+            <h3>API Response:</h3>
+            <pre id="response-content"></pre>
+        </div>
+    </section>
+
+    <section id="code">
+        <h2>Code Examples</h2>
+        <div class="code-example">
+            <h3>Example API Request (Java Server Status)</h3>
+            <pre>
+GET http://infra-sg01.zygo.cloud:1034/status/java?ip=mc.hypixel.net&port=25565
+            </pre>
+        </div>
+        <div class="code-example">
+            <h3>Example API Response</h3>
+            <pre>
+{
+    "online": true,
+    "version": "1.16.5",
+    "players_online": 10,
+    "max_players": 100,
+    "latency": 42
+}
+            </pre>
+        </div>
+        <div class="code-example">
+            <h3>Sorce Code</h3>
+            <pre>
+                const express = require('express');
+                const { status, statusBedrock } = require('minecraft-server-util');
+                const NodeCache = require('node-cache');
+                const cors = require('cors');
+                
+                const app = express();
+                const cache = new NodeCache({ stdTTL: 60 });  
+                const PORT = process.env.PORT || 1034;
+                
+                app.use(cors()); 
+                
+                
+                const getCachedStatus = async (cacheKey, fetchStatus) => {
+                    const cachedData = cache.get(cacheKey);
+                    if (cachedData) {
+                        console.log(`Cache hit for ${cacheKey}`);
+                        return cachedData;
+                    }
+                    
+                    console.log(`Cache miss for ${cacheKey}. Fetching new data.`);
+                    const data = await fetchStatus();
+                    cache.set(cacheKey, data); 
+                    return data;
+                };
+                
+                
+                const extractMotd = (description) => {
+                    if (description?.extra) {
+                        return description.extra.map((item) => item.text).join(''); 
+                    }
+                    return description?.text || 'No MOTD available';  
+                };
+                
+                
+                app.get('/status/java', async (req, res) => {
+                    const ip = req.query.ip;
+                    const port = req.query.port ? parseInt(req.query.port) : 25565;
+                
+                    if (!ip) {
+                        return res.status(400).json({ error: 'IP address is required' });
+                    }
+                
+                    const cacheKey = `java-${ip}-${port}`;
+                
+                    try {
+                        const result = await getCachedStatus(cacheKey, async () => {
+                           
+                            return await status(ip, port, { timeout: 10000 }); 
+                        });
+                
+                        res.json({
+                            online: true,
+                            version: result.version.name,
+                            players_online: result.players.online,
+                            max_players: result.players.max,
+                            latency: result.roundTripLatency,
+                            icon: result.favicon || null 
+                        });
+                    } catch (error) {
+                        console.error(`Error fetching Java server status for ${ip}:${port}`, error);
+                        res.json({
+                            online: false,
+                            error: `Unable to fetch status. Error: ${error.message}`
+                        });
+                    }
+                });
+                
+                
+                app.get('/status/bedrock', async (req, res) => {
+                    const ip = req.query.ip;
+                    const port = req.query.port ? parseInt(req.query.port) : 19132;
+                
+                    if (!ip) {
+                        return res.status(400).json({ error: 'IP address is required' });
+                    }
+                
+                    const cacheKey = `bedrock-${ip}-${port}`;
+                
+                    try {
+                        const result = await getCachedStatus(cacheKey, async () => {
+                            return await statusBedrock(ip, port, { timeout: 10000 }); 
+                        });
+                
+                        res.json({
+                            online: true,
+                            players_online: result.playersOnline,
+                            max_players: result.playersMax,
+                            latency: result.roundTripLatency
+                        });
+                    } catch (error) {
+                        console.error(`Error fetching Bedrock server status for ${ip}:${port}`, error); 
+                        res.json({
+                            online: false,
+                            error: `Unable to fetch status. Error: ${error.message}`
+                        });
+                    }
+                });
+                
+                
+                app.listen(PORT, () => {
+                    console.log(`Minecraft Status API is running on port ${PORT}`);
+                });
+                
+            </pre>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2024 Minecraft Server Status API Docs</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
